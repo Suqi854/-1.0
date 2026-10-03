@@ -1,6 +1,8 @@
-# A-share public source distribution 1.27.0-public.2
+# A-share research-only development copy1.28.0-dev.3
 
-This `public-no-credentials-v2` profile removes provider/Access cloud-credential hosting, Cloudflare/auction collector execution and all cloud market-database reads and writes from the public source. The running private Site remains 1.27.0. See the [public distribution profile](docs/public-distribution-profile.md) for capability differences, the four unsupported cloud tools and the manual local-host boundary. No cloud/private/local runtime is activated by this source delivery.
+This development candidate adds condition module0.1.4 with the reviewed version2 research-only result contract, typed renderer and pure manifest import. See docs/research-only-next-contract.md. It is not the Git release, deployment or real research-pool run.
+
+The inherited `public-no-credentials-v2` profile removes provider/Access cloud-credential hosting, Cloudflare/auction collector execution and all cloud market-database reads and writes from the public source. The running private Site remains 1.27.0. See the [public distribution profile](docs/public-distribution-profile.md) for capability differences, the four unsupported cloud tools and the manual local-host boundary. No cloud/private/local runtime is activated by this source delivery.
 
 
 This repository contains the reviewed current Site source, prepared local OHLCV engine, generic documentation and invented test inputs. It contains no live market archive, runtime database, private key, personal stock list, position or private condition rule. The prepared updater has no real source, route or continuous/postclose timer connected.
@@ -13,7 +15,7 @@ Manual observation/archive, local snapshot fallback and private-watchlist storag
 
 The [local dataset contract](docs/local-ohlcv-dataset-contract.md) and [retention/completion contract](docs/market-retention-and-postclose.md) define the current data boundaries. The separate OHLCV updater/store remains a prepared kernel without a real loader or continuous/postclose schedule. Private combinations must execute and save locally; changing rules must not repeatedly collect data or upload rules to cloud/Git.
 
-The Site's screening area links to a separate client-only multi-condition editor under /condition-screen/. It is explicitly a synthetic demonstration: no real industry-leader pool or OHLCV dataset is connected. Rules run in browser memory and download only when the user clicks; CSP forbids network connections and there is no server rule API, telemetry or rule storage. modules/condition-screen contains the independently reviewed0.1.3 generic engine and invented fixtures. Its190 pure tests were independently rerun; the author's32 standalone browser checks do not establish integrated Site visual QA. Actual local data/strategy integration remains a later step.
+The Site's screening area links to a separate client-only multi-condition editor under /condition-screen/. It is explicitly a synthetic demonstration: no real industry-leader pool or OHLCV dataset is connected. Rules run in browser memory and download only when the user clicks; CSP forbids network connections and there is no server rule API, telemetry or rule storage. modules/condition-screen0.1.4 extends the independently reviewed0.1.3 strict engine. Its190 original tests remain the compatibility baseline; research-only and the public.2 storage boundary have separate offline tests and review. The original author's32 standalone browser checks do not establish integrated Site visual QA. Actual local data/strategy integration remains a later step.
 
 Source exports are generated from docs/public-export-manifest.json. They never import the original Site Git history, actual Cloudflare configuration, old deployment scripts or personal authorization records. All legacy Cloudflare runtime/test support and configuration examples are excluded. There is no bridge or cloud collector to enable. See the [public cloud boundary](docs/public-cloud-reference.md) before any future review.
 
@@ -24,3 +26,5 @@ plugins/ashare-analysis-companion is the1.9.29-public.2 capability variant of th
 No new software open-source license is selected here. Existing and third-party licenses retain their own scope. Software licensing does not grant retention or redistribution rights for upstream market data; the [reference/license record](docs/mainboard-screening-contract.md#reference-and-licensing-record) keeps that distinction.
 
 No order execution, paid resource, cloud collection schedule, real full-pool scan, performance backtest or revenue claim is enabled by this source tree. Earlier private-release or public-variant test totals are not current coverage; this profile's total must be measured on its final tree.
+
+The next local loader/planner candidate and synthetic evidence are described in docs/local-loader-planner-candidate.md. Its source adapter is explicit Node-only; the planner registers no timer, source rights remain unknown, and actual local operation is not activated. Public Git and the deployed Site remain their separately stated versions.

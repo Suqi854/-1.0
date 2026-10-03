@@ -14,6 +14,7 @@
     <aside class="notice">真实行业龙头池尚未接入。本页仅使用虚构 OHLCV 与10条合成池记录。编辑、执行和规则下载在当前浏览器内完成；无云 API、自动交易或收益验证。真实本地接入由行情任务完成。</aside>
     <section aria-labelledby="data-title"><h2 id="data-title">1. 数据边界与使用限制</h2>
       <div class="data-grid"><div><label for="pool">冻结基础股票池</label><input id="pool" value="行业龙头子池 · 沪深主板非 ST（合成）" disabled><p class="muted">合成池10条：范围外2条；本次范围8条，非ST未知另计不足。</p></div><div><label for="symbols">进一步限制股票（逗号分隔）</label><input id="symbols" placeholder="如 SH600001,SZ000001"><p class="muted">留空使用冻结池；不能扩大至池外股票。</p></div><div><label for="budget">最多处理股票数</label><input id="budget" type="number" value="8" min="0" max="6000"><p class="muted">超出预算明确计为未处理。</p></div></div>
+      <label for="evaluation-mode">判断用途</label><select id="evaluation-mode"><option value="strict">strict · 保留既有身份 / 状态门</option><option value="research_only">research_only · 仅量价研究，不认证交易资格</option></select>
       <label for="exchange">进一步限制市场</label><select id="exchange"><option value="ALL">沪深主板</option><option value="SH">仅沪市主板</option><option value="SZ">仅深市主板</option></select>
       <div id="frames" class="frame-grid"></div>
       <details><summary>当前禁用的数据条件</summary><p>历史成交额：缺真实历史 amount_cny；换手率：缺同日期可流通股本；市值：缺同日期股本口径；财务、资金流：缺可追溯同口径数据。暂不参与筛选。</p><p>真实交易日历仅覆盖2026；更早周期完成验证未知。早期周/月线完成性保持未知；短窗口只按2026合成元数据验算。</p></details>
@@ -24,6 +25,6 @@
     </section>
     <section aria-labelledby="result-title"><div class="section-top"><h2 id="result-title">3. 结果与覆盖对账</h2><span id="report-state"></span></div><div id="summary" class="summary" aria-live="polite"></div><div id="results"></div></section>
   </main>
-  <footer>一期 v0.1.3 · 开发验证 ≠ 真实龙头池完成 ≠ 收益验证 · 既有行情服务与技能身份保持</footer>
+  <footer>开发 v0.1.4 · 开发验证 ≠ 真实龙头池完成 ≠ 收益验证 · 既有行情服务与技能身份保持</footer>
 </body>
 </html>

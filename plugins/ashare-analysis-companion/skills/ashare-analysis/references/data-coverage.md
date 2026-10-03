@@ -3,7 +3,7 @@
 
 此技能源码变体为 1.9.29-public.2，配套 1.27.0-public.2 / public-no-credentials-v2。它与运行中的私有服务及正式安装的 1.9.29 技能能力不同。公开云端的 14 个 MCP 名字中，get_stock_directory、get_auction_snapshot、get_auction_series、get_archive 是四个 unsupported 兼容占位；返回 PUBLIC_PROFILE_LOCAL_REQUIRED 和 local_required=true，不读取环境、数据库、凭据或来源，也不写入数据库。get_diagnostics 仅返回被动元数据与当前实例请求观察，不作上游探测。公开代码不含凭据设置、Access 桥或采集器执行流程；不能通过配置密钥启用被移除功能。
 
-云端筛选只接受公开显式代码和固定 swing-daily-v1；私人名单、阈值、条件及结果只在授权本地执行。无密钥 OHLCV 内核已经准备，但真实 loader、连续更新与盘后调度尚未接入。条件模块 0.1.3 只有 10 条虚构池记录及合成行情，不是实际行业龙头池。详见 [公开技能能力声明](../../../PUBLIC-PROFILE.md)。
+云端筛选只接受公开显式代码和固定 swing-daily-v1；私人名单、阈值、条件及结果只在授权本地执行。无密钥 OHLCV 内核已经准备，但真实 loader、连续更新与盘后调度尚未接入。条件模块 0.1.4（开发候选） 只有 10 条虚构池记录及合成行情，不是实际行业龙头池。详见 [公开技能能力声明](../../../PUBLIC-PROFILE.md)。
 
 # 数据覆盖与指标口径
 
@@ -49,7 +49,7 @@ portable OHLCV 更新器/store 仅准备代码，未导入 Site、未接 portabl
 
 本地代次保留 dataset_id/content_hash、source/interval/adjustment、target_session、calendar_version/policy_version、request_started_at/completion_cutoff/fetched_at/source_timestamp 与逐条质量。coverage 对账为 eligible = ready + partial + pending_source + failed_without_data + pending；目录数量不是行情齐备数。缺序列或有效样本时返回 unknown/insufficient_data。私人规则读单一冻结代次并只本地重算，改条件不重抓行情；私人密钥、名单、参数和结果不进云工具/Git/包。
 
-条件模块 0.1.3 提供已集成的纯合成页面：10 条虚构池记录及合成 OHLCV，规则只在浏览器内存评估/本地下载，CSP 禁止网络。它没有真实行业龙头池、loader 或完成更新，不能称真实条件选股、回测或盈利验收。云端正式筛选仍是固定 swing-daily-v1。
+条件模块 0.1.4（开发候选） 提供已集成的纯合成页面：10 条虚构池记录及合成 OHLCV，规则只在浏览器内存评估/本地下载，CSP 禁止网络。它没有真实行业龙头池、loader 或完成更新，不能称真实条件选股、回测或盈利验收。云端正式筛选仍是固定 swing-daily-v1。
 
 ### 目录失败与安全诊断
 

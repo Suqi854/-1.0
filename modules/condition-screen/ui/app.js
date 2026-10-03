@@ -1,4 +1,4 @@
-import { createScreenLedger, validateRule, swingPreset, LIMITS } from '../src/index.js';
+import { createScreenLedger, validateRule, swingPreset, LIMITS, recognizeResultContract } from '../src/index.js';
 import { createSyntheticBatchDemo } from '../src/mock-batches.js';
 const $ = s => document.querySelector(s);
 const labels = { D: '日线', W: '周线', M: '月线', match: '命中', no_match: '不符', failure: '数据失败', insufficient: '不足 / 未知', unprocessed: '未处理' };
@@ -71,24 +71,29 @@ function tree(t){
 }
 function run(){
   const budget=$('#budget').value, symbols=$('#symbols').value.trim();
-  const limits={maxProcessed:budget===''?null:Number(budget)};if(symbols)limits.symbols=symbols.split(/[,，]/).map(s=>s.trim().toUpperCase()).filter(Boolean);
+  const research=$('#evaluation-mode').value==='research_only',directory=structuredClone(demo.config.directory);
+  if(research){directory.researchIdentity={schema_version:'research-identity-v1',basis:'public_company_research_and_name_observation',research_universe_hash:'a'.repeat(64),pool_hash:'b'.repeat(64),version:'synthetic-research-v1',evidence_revision:'synthetic-evidence-v1',evidence_sha256:'c'.repeat(64),name_observation_session:demo.config.targetSession,official_directory_verified:false,directory_identity_hash:null};for(const e of directory.entries){if(e.stStatus==='non_st')e.stStatus='unknown';e.nameObservation={asOf:demo.config.targetSession,provider:'tencent',stPrefixObserved:false};}}
+  const limits={maxProcessed:budget===''?null:Number(budget),...(research?{evaluation_mode:'research_only'}:{})};if(symbols)limits.symbols=symbols.split(/[,，]/).map(s=>s.trim().toUpperCase()).filter(Boolean);
   if($('#exchange').value!=='ALL')limits.exchanges=[$('#exchange').value];
-  const ledger=createScreenLedger(JSON.stringify({...demo.config,frames:mock.frames,rule,limits}));
-  if(!ledger.valid){renderReport(ledger.report??{status:'invalid',errors:ledger.errors});return;}
-  let request;while((request=ledger.nextBatch())!==null)ledger.consume(JSON.stringify(demo.readBatch(request)));
-  renderReport(ledger.finish());
+  const ledger=createScreenLedger(JSON.stringify({...demo.config,directory,frames:mock.frames,rule,limits}));
+  if(!ledger.valid){renderReport(JSON.stringify(ledger.report??{version:1,status:'invalid',errors:ledger.errors}));return;}
+  let request;while((request=ledger.nextBatch())!==null){const batch=demo.readBatch(request);if(research)for(const symbol of Object.keys(batch.suspensionBySymbol))batch.suspensionBySymbol[symbol]={state:'unknown'};ledger.consume(JSON.stringify(batch));}
+  renderReport(JSON.stringify(ledger.finish()));
 }
 // The host binds a locally computed engine report. No data upload or remote screening endpoint.
-export function renderReport(report){
-  lastReport=report;$('#summary').replaceChildren();$('#results').replaceChildren();$('#report-state').textContent='仅合成数据结果';$('#report-state').className='';
+export function renderReport(input){try{return renderTypedReport(input);}catch{lastReport=null;$('#summary').replaceChildren();$('#results').replaceChildren();$('#validation').textContent='结果合同拒绝：RESULT_RENDER_INVALID';$('#validation').className='error';$('#report-state').textContent='结果已清除：格式无效';}}
+function renderTypedReport(input){
+  const gate=recognizeResultContract(input);if(!gate.valid){lastReport=null;$('#validation').textContent='结果合同拒绝：'+gate.code;$('#validation').className='error';$('#summary').replaceChildren();$('#results').replaceChildren();$('#report-state').textContent='结果已清除：合同不受支持';return;}
+  const original=gate.report,report=gate.mode==='research_only'?{...original,rows:original.research_rows,counts:original.research_counts}:original;
+  lastReport=original;$('#summary').replaceChildren();$('#results').replaceChildren();$('#report-state').textContent=gate.mode==='research_only'?'仅量价研究 · 交易资格未知/不可执行 · 合成数据':'仅合成数据结果';$('#report-state').className='';
   if(!['completed','pending','budget_exhausted'].includes(report.status)){$('#validation').textContent=report.errors.map(e=>`${e.code}: ${e.message}`).join('；');$('#validation').className='error';return;}
   $('#validation').textContent='声明式规则验证通过；执行在浏览器内存';$('#validation').className='';
-  for(const [k,name] of [['total','范围总数'],['successful','可判定'],['match','命中'],['no_match','不符'],['failure','数据失败'],['insufficient','不足 / 未知'],['unprocessed','未处理']]){const e=element('div',name,'metric');e.append(element('b',String(report.counts[k])));$('#summary').append(e);}
+  for(const [k,name] of [['total','范围总数'],['successful','可判定'],['match',gate.mode==='research_only'?'研究匹配':'命中'],['no_match',gate.mode==='research_only'?'研究不符':'不符'],['failure','数据失败'],['insufficient','不足 / 未知'],['unprocessed','未处理']]){const e=element('div',name,'metric');e.append(element('b',String(report.counts[k])));$('#summary').append(e);}
   const d=report.directory;
   $('#results').append(element('p',`冻结池 ${d.universeVersion??'未提供'} · ${d.sourceNotes??'来源说明未提供'}`,'coverage'));
   if(report.batchLedger)$('#results').append(element('p',`本地分批 ${report.batchLedger.length}批 / 每批≤${report.batchSize}股 · manifest ${report.freezeTuple.manifestHash} · 状态 ${report.status}`,'coverage'));$('#results').append(element('p',`目录 ${d.asOf} / ${d.source} · ${d.catalogTotal} = 范围外 ${d.excludedTotal} + 用户限制排除 ${d.restrictionExcludedTotal} + 本次 ${report.counts.total}；本次 ${report.counts.total} = 可判定 ${report.counts.successful} + 数据失败 ${report.counts.failure} + 不足 ${report.counts.insufficient} + 未处理 ${report.counts.unprocessed}`,'coverage'));
   if(report.requestedOutsideCatalog.length)$('#results').append(element('p',`限制中不在目录的代码：${report.requestedOutsideCatalog.join(', ')}`,'coverage'));
-  for(const r of report.rows){const box=element('details',undefined,'stock');box.dataset.state=r.state;const head=element('summary');head.append(element('b',r.symbol,'symbol'),element('span',r.name),element('span',labels[r.state],`badge ${r.state}`));box.append(head);box.append(element('p',`目录身份截止 ${r.directoryAsOf} · 请求 ${Object.entries(r.requestedFrames).map(([tf,f])=>`${labels[tf]} ${f?.cutoffDate??'未知'}（预期末根 ${f?.expectedLastDate??'未知'}）`).join(' / ')}`,'evidence'));if(r.tree)box.append(tree(r.tree));for(const e of r.reasons??[])box.append(element('p',`${e.code} · ${e.message}`));$('#results').append(box);}
+  for(const r of report.rows){const box=element('details',undefined,'stock');box.dataset.state=r.state;const head=element('summary');if(gate.mode==='research_only')box.append(element('p','研究判断 '+r.research_decision+' · 交易资格 '+r.trading_eligibility.state+' · actionable=false','coverage'));head.append(element('b',r.symbol,'symbol'),element('span',r.name),element('span',labels[r.state],`badge ${r.state}`));box.append(head);box.append(element('p',`目录身份截止 ${r.directoryAsOf} · 请求 ${Object.entries(r.requestedFrames).map(([tf,f])=>`${labels[tf]} ${f?.cutoffDate??'未知'}（预期末根 ${f?.expectedLastDate??'未知'}）`).join(' / ')}`,'evidence'));if(r.tree)box.append(tree(r.tree));for(const e of r.reasons??[])box.append(element('p',`${e.code} · ${e.message}`));$('#results').append(box);}
   if(!report.rows.length)$('#results').append(element('p','限制范围无目录内股票','result-empty'));
 }
 $('#preset').addEventListener('click',()=>{rule=structuredClone(swingPreset);renderEditor();dirty();});
@@ -98,5 +103,5 @@ $('#export').addEventListener('click',()=>{
   const url=URL.createObjectURL(new Blob([JSON.stringify(rule,null,2)],{type:'application/json'}));const a=element('a');a.href=url;a.download='local-private-rule.json';a.click();URL.revokeObjectURL(url);
 });
 $('#run').addEventListener('click',run);$('#symbols').addEventListener('input',dirty);$('#budget').addEventListener('input',dirty);
-$('#exchange').addEventListener('change',dirty);
+$('#exchange').addEventListener('change',dirty);$('#evaluation-mode').addEventListener('change',dirty);
 renderEditor();renderFrames();run();

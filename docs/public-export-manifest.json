@@ -13,12 +13,14 @@
     "README.md",
     "db/schema.ts",
     "docs/condition-screening-module.md",
+    "docs/local-loader-planner-candidate.md",
     "docs/local-ohlcv-dataset-contract.md",
     "docs/mainboard-screening-contract.md",
     "docs/market-retention-and-postclose.md",
     "docs/public-cloud-reference.md",
     "docs/public-distribution-profile.md",
     "docs/public-export-manifest.json",
+    "docs/research-only-next-contract.md",
     "docs/stock-directory-contract.md",
     "drizzle.config.ts",
     "drizzle/0000_public_manual_observations.sql",
@@ -41,12 +43,14 @@
     "modules/condition-screen/src/presets.js",
     "modules/condition-screen/src/provenance.js",
     "modules/condition-screen/src/quality.js",
+    "modules/condition-screen/src/result-contract.js",
     "modules/condition-screen/tests/adapter.test.js",
     "modules/condition-screen/tests/batch-ledger.test.js",
     "modules/condition-screen/tests/browser.cjs",
     "modules/condition-screen/tests/engine.test.js",
     "modules/condition-screen/tests/fixtures/local-ohlcv-synthetic.json",
     "modules/condition-screen/tests/quality-matrix.test.js",
+    "modules/condition-screen/tests/research-mode.test.js",
     "modules/condition-screen/tests/review-regressions.test.js",
     "modules/condition-screen/ui/app.js",
     "modules/condition-screen/ui/index.html",
@@ -68,12 +72,17 @@
     "plugins/ashare-analysis-companion/skills/ashare-strategy-validation/references/validation-protocol.md",
     "plugins/ashare-analysis-companion/skills/ashare-swing-screen/SKILL.md",
     "plugins/ashare-analysis-companion/skills/ashare-swing-screen/references/screen-contract.md",
+    "portable/local-data-update-host.mjs",
     "portable/local-market.mjs",
+    "portable/local-name-observation.mjs",
     "portable/local-observation-store.mjs",
+    "portable/local-public-loader.mjs",
+    "portable/local-update-planner.mjs",
     "portable/local-watchlist.mjs",
     "portable/manual-observations.sql",
     "portable/ohlcv-store.mjs",
     "portable/ohlcv-updater.mjs",
+    "portable/research-universe.mjs",
     "portable/server.mjs",
     "portable/sqlite.mjs",
     "portable/start-local.cmd",
@@ -138,8 +147,12 @@
     "test/fixtures/tencent_week.json",
     "test/formal-skills-source.test.mjs",
     "test/history-routing.test.mjs",
+    "test/local-loader-pipeline.test.mjs",
+    "test/local-observation-revision.test.mjs",
     "test/local-observation-store.test.mjs",
     "test/local-ohlcv-updater.test.mjs",
+    "test/local-public-loader.test.mjs",
+    "test/local-update-planner.test.mjs",
     "test/mainboard-screening-page.test.mjs",
     "test/mainboard-universe-routes.test.mjs",
     "test/mainboard-universe.test.mjs",
@@ -153,6 +166,8 @@
     "test/public-xlsx.test.mjs",
     "test/quote-name-resolution.test.mjs",
     "test/quote-routing.test.mjs",
+    "test/research-pipeline.test.mjs",
+    "test/research-universe-import.test.mjs",
     "test/sector-context.test.mjs",
     "test/security-fields.test.mjs",
     "test/stock-context.test.mjs",
@@ -194,12 +209,14 @@
     "README.md",
     "db/schema.ts",
     "docs/condition-screening-module.md",
+    "docs/local-loader-planner-candidate.md",
     "docs/local-ohlcv-dataset-contract.md",
     "docs/mainboard-screening-contract.md",
     "docs/market-retention-and-postclose.md",
     "docs/public-cloud-reference.md",
     "docs/public-distribution-profile.md",
     "docs/public-export-manifest.json",
+    "docs/research-only-next-contract.md",
     "docs/stock-directory-contract.md",
     "drizzle.config.ts",
     "drizzle/0000_public_manual_observations.sql",
@@ -222,12 +239,14 @@
     "modules/condition-screen/src/presets.js",
     "modules/condition-screen/src/provenance.js",
     "modules/condition-screen/src/quality.js",
+    "modules/condition-screen/src/result-contract.js",
     "modules/condition-screen/tests/adapter.test.js",
     "modules/condition-screen/tests/batch-ledger.test.js",
     "modules/condition-screen/tests/browser.cjs",
     "modules/condition-screen/tests/engine.test.js",
     "modules/condition-screen/tests/fixtures/local-ohlcv-synthetic.json",
     "modules/condition-screen/tests/quality-matrix.test.js",
+    "modules/condition-screen/tests/research-mode.test.js",
     "modules/condition-screen/tests/review-regressions.test.js",
     "modules/condition-screen/ui/app.js",
     "modules/condition-screen/ui/index.html",
@@ -249,12 +268,17 @@
     "plugins/ashare-analysis-companion/skills/ashare-strategy-validation/references/validation-protocol.md",
     "plugins/ashare-analysis-companion/skills/ashare-swing-screen/SKILL.md",
     "plugins/ashare-analysis-companion/skills/ashare-swing-screen/references/screen-contract.md",
+    "portable/local-data-update-host.mjs",
     "portable/local-market.mjs",
+    "portable/local-name-observation.mjs",
     "portable/local-observation-store.mjs",
+    "portable/local-public-loader.mjs",
+    "portable/local-update-planner.mjs",
     "portable/local-watchlist.mjs",
     "portable/manual-observations.sql",
     "portable/ohlcv-store.mjs",
     "portable/ohlcv-updater.mjs",
+    "portable/research-universe.mjs",
     "portable/server.mjs",
     "portable/sqlite.mjs",
     "portable/start-local.cmd",
@@ -319,8 +343,12 @@
     "test/fixtures/tencent_week.json",
     "test/formal-skills-source.test.mjs",
     "test/history-routing.test.mjs",
+    "test/local-loader-pipeline.test.mjs",
+    "test/local-observation-revision.test.mjs",
     "test/local-observation-store.test.mjs",
     "test/local-ohlcv-updater.test.mjs",
+    "test/local-public-loader.test.mjs",
+    "test/local-update-planner.test.mjs",
     "test/mainboard-screening-page.test.mjs",
     "test/mainboard-universe-routes.test.mjs",
     "test/mainboard-universe.test.mjs",
@@ -334,6 +362,8 @@
     "test/public-xlsx.test.mjs",
     "test/quote-name-resolution.test.mjs",
     "test/quote-routing.test.mjs",
+    "test/research-pipeline.test.mjs",
+    "test/research-universe-import.test.mjs",
     "test/sector-context.test.mjs",
     "test/security-fields.test.mjs",
     "test/stock-context.test.mjs",
@@ -368,7 +398,7 @@
       "skills/ashare-swing-screen/SKILL.md": "ab04932f26dce748f5f2ed5077906a3fa2a62f0d1fde562ea87b777432dbbeda",
       "skills/ashare-swing-screen/references/screen-contract.md": "1957f0389d1ca7c34b7ede24c6c96499d1818a8e999ae66144b700e616f7c853"
     },
-    "public_mirror_scope": "public.2 current capability variant; transient cloud queries with Node-only local observations; not byte-identical formal release",
+    "public_mirror_scope": "development research consumer inheriting public.2 current capability variant; not byte-identical formal release",
     "source_variant_version": "1.9.29-public.2",
     "installed_formal_version": "1.9.29",
     "formal_release_republished": false,
@@ -376,22 +406,22 @@
       "PUBLIC-PROFILE.md": "d0e457006291f46cca0e0e9f13a1e4f2a16bd696e09f0166ac137dff5517d304",
       "plugin.json": "e9411b5000fb6e82ba6fdd3f8f4c5f0e1ad970da682d759eb0b2625e80ef73ec",
       ".codex-plugin/plugin.json": "1c9d2ebe8c48c2502f8a33f1c925b0637485e56e831cc795720f1bdcf3beef1a",
-      "skills/ashare-swing-screen/SKILL.md": "51c9053f12c7ca6951145a78108bdfa5ff69a6f03daba8e9db852523a8c2fef0",
-      "skills/ashare-analysis/SKILL.md": "4a810d5c181d9d9150db0ffa592f9a6566f99b0adc0ce0f70a6877939acbd435",
-      "skills/ashare-strategy-validation/SKILL.md": "40d5a5a1a383f51e691c11d71768ea61904643a89225b3b552f8887a2c5146cf",
-      "skills/ashare-fundamental-research/SKILL.md": "08ce24574ddb7a086672b9f821f410bcb3ed91769a35958448ae89befd5b4418",
-      "skills/ashare-swing-screen/references/screen-contract.md": "216a139ceff3ec6df85624dc74a43489e74096a79d61744273c6aa6d5652c51a",
-      "skills/ashare-analysis/references/data-coverage.md": "044e4fd354a4a52b046805f0ac7ec91444d9b7c9849d069b3fc9ee6f7bbfb5c5",
+      "skills/ashare-swing-screen/SKILL.md": "bf4d4acb77933695a90b95bc920d21a21697058cab2d4f343b82fe3d13c4c0ef",
+      "skills/ashare-analysis/SKILL.md": "e849807c4b1bacd90c712d264cc3c7db17cdd226944ff25056767c73904084ee",
+      "skills/ashare-strategy-validation/SKILL.md": "ef101910a4ecd02daab5d430a7403121c887d434e46eb0309d531db6e13f511b",
+      "skills/ashare-fundamental-research/SKILL.md": "a918b6a502dbbe16aeb01b10edc5acad94100301b1ad11192d8ccdeeec1ce9a3",
+      "skills/ashare-swing-screen/references/screen-contract.md": "2d304207ba7e726002099087694b20b726b688990c37cacf2488ec548e8aa9ab",
+      "skills/ashare-analysis/references/data-coverage.md": "573ed5ff941c3f5602914c68864adc954855f5f32e5c2a697f69e1c83b2d9886",
       "skills/ashare-strategy-validation/references/risk-models.md": "d1ba6ff1f7e301bc5d420150e42e3b12b6f65fb859db85b1e34a55b0f91ff3ff",
       "skills/ashare-strategy-validation/references/evidence-and-ashare-gates.md": "0d422f19998cfadee5135e467a31bb027f394d596995ac9e5a20765bde4215c7",
-      "skills/ashare-strategy-validation/references/validation-protocol.md": "6161b13d7b8e40acdde97e24dc44c20e39802db0df29d5cddbc1886489568030",
+      "skills/ashare-strategy-validation/references/validation-protocol.md": "2a6fc0647e63aca964f9ee9cfa29674eb0f13241c1c2972d486c6a5bb0606549",
       "skills/ashare-fundamental-research/references/valuation-contract.md": "479983599dfc4112973750e9c54c871ad616b2565683228c56fead6bd6feed2f",
       "skills/ashare-fundamental-research/references/sources-and-scope.md": "78f5be0acd1367f4eb4ccb05cd760ef7ecaa630fe6d9a82be3eade691fc01d34",
       "skills/ashare-fundamental-research/references/business-evidence.md": "b4d96816fb847374c9b3fedfb95884ff74650c845c17c1f2923f776e3530e9bc"
     }
   },
   "condition_module_source": {
-    "version": "0.1.3",
+    "version": "0.1.4",
     "independent_pure_tests": 190,
     "author_browser_checks": 32,
     "independent_browser_rerun": false,
@@ -403,7 +433,9 @@
       "docs/HANDOFF.md"
     ],
     "runtime": "client_only_synthetic_demo_no_real_universe_or_data",
-    "private_rules": "browser_memory_and_user_download_only_no_network_or_server_storage"
+    "private_rules": "browser_memory_and_user_download_only_no_network_or_server_storage",
+    "next_development_only": true,
+    "research_result_contract": "ashare-research-screen-v1"
   },
   "export_profile": "sanitized_public_tree",
   "text_transforms": [],
@@ -449,7 +481,7 @@
   ],
   "distribution_profile": {
     "name": "public-no-credentials-v2",
-    "public_version": "1.27.0-public.2",
+    "public_version": "1.28.0-dev.3",
     "private_deployed_version": "1.27.0",
     "private_site_changed": false,
     "credential_implementations_included": false,
@@ -460,7 +492,9 @@
     "cloud_database_reads": false,
     "cloud_market_schema_initialization": false,
     "cloud_archive_tool": "unsupported",
-    "local_observation_runtime": "immutable_branded_Node_SQLite"
+    "local_observation_runtime": "immutable_branded_Node_SQLite",
+    "development_only": true,
+    "github_published": false
   },
   "excluded_legacy_capability_files": [
     "cloudflare/wrangler.example.jsonc",
@@ -524,105 +558,10 @@
     "test/support/legacy-cloudflare/worker.mjs",
     "test/workbench-layout.test.mjs"
   ],
-  "current_capability_documentation": {
+  "inherited_public_documentation_revision": {
     "version": "public-capabilities-docs-v3-local-storage-isolation",
-    "runtime_service_version": "1.27.0-public.2",
-    "runtime_source_changed": true,
-    "previous_export_report_sha256": "2d230c2634982f0f3660ecabe483b6f631f493fa47d93bb7807be611bbcf5ca3",
-    "formal_private_source_changed": false,
-    "removed_legacy_execution_instructions": true,
-    "changes": [
-      {
-        "path": "README.md",
-        "before_sha256": "973fdf567e871527b34de709369e697b438c23100528fb19f49dc46aa398ff37",
-        "after_sha256": "5b7e3c448392d25f6ec5b93de4311d141faa9c95dae0cb7c8641a08e000ae177"
-      },
-      {
-        "path": "docs/condition-screening-module.md",
-        "before_sha256": "279ed1af48d1efabe233a8bb1bcae45a790622fa787f3caf068fe656dbd7e295",
-        "after_sha256": "d4e3291faff4f4aa0adcb6c5eff9571836d32ac547684fa0ddd9f12465e73cae"
-      },
-      {
-        "path": "docs/local-ohlcv-dataset-contract.md",
-        "before_sha256": "ddae7f8f09a7e66ab8d7af68e11c32775fcf665417908435178747bf04eb27db",
-        "after_sha256": "b7da2795ecc2b801506f29a1ae84a814626cb5a171c649376f8dbb9971e6204f"
-      },
-      {
-        "path": "docs/mainboard-screening-contract.md",
-        "before_sha256": "f9e4170fb86a4279d6801a3523c9e9a633f1ac4ee128b039f15b48394cb9e231",
-        "after_sha256": "f2a1d404beb429451ff35a0a22c32078ddd5e8d0b0d49e5ec254d56fb7aea744"
-      },
-      {
-        "path": "docs/market-retention-and-postclose.md",
-        "before_sha256": "d5f106a05dd9a0a49ed231525bb7ecb4b87e970d8ea20fe6c496f5444adc0df0",
-        "after_sha256": "70b5001ebae4baf17f3d0aa41d91c86b04e0edcc0cdd71bd32d8e1dc58985545"
-      },
-      {
-        "path": "docs/public-cloud-reference.md",
-        "before_sha256": "c437585c59eb980396d01247a5b3adfaee844f198bb7e50d0a2754aeefacf97d",
-        "after_sha256": "117fa2977c839750ac4e3ce1a02d11dfe6f5ac0ac46af2f18ac7087088b649f4"
-      },
-      {
-        "path": "docs/public-distribution-profile.md",
-        "before_sha256": "cfc30a56ca01609b38e4825f772516a2132bfc978b04e6e83dd4a943b275d9f8",
-        "after_sha256": "668fe6a1fbe98d62f9d0f571b789ee16798b3d2c6d1d0a289d174a76d8f87ae4"
-      },
-      {
-        "path": "docs/stock-directory-contract.md",
-        "before_sha256": "83d5045daa99bd4a375b7f85daf79174144eb6eb5128eb90a8221efc3afffef2",
-        "after_sha256": "1a32df7414d68bdd1328d70b8d1a1e1fd4b02f49c9b7d7f89b30f92304c8fd38"
-      },
-      {
-        "path": "modules/condition-screen/README.md",
-        "before_sha256": "850f04892188b9dad206c9a5208560455e6ab107f0854321a465dacf51255bda",
-        "after_sha256": "4e949eb37bdb4ac4551783310dd696f5dd78a2fb1890ee2770579d0260ec2100"
-      },
-      {
-        "path": "modules/condition-screen/docs/UPSTREAM-CONTRACT.md",
-        "before_sha256": "9262a73e64013e92010924f800bdfa571c0f2665c8cd9a5e00791ae196f96c8a",
-        "after_sha256": "27f6dff47495be38ace1231842dd8de0aca3d3450e5444f0af43af891c4a1130"
-      },
-      {
-        "path": "plugins/ashare-analysis-companion/PUBLIC-PROFILE.md",
-        "before_sha256": "cd53bef3be280bf36e8c32a228a5eb54e234a9d2365cf3944cef632f41aaa1ac",
-        "after_sha256": "d0e457006291f46cca0e0e9f13a1e4f2a16bd696e09f0166ac137dff5517d304"
-      },
-      {
-        "path": "plugins/ashare-analysis-companion/skills/ashare-analysis/SKILL.md",
-        "before_sha256": "6f565de2ed579820846eade283cdfef46edde6f2419b81f3ed164d57a602837c",
-        "after_sha256": "4a810d5c181d9d9150db0ffa592f9a6566f99b0adc0ce0f70a6877939acbd435"
-      },
-      {
-        "path": "plugins/ashare-analysis-companion/skills/ashare-analysis/references/data-coverage.md",
-        "before_sha256": "4384a77a92c711e0243cc37bec99361b5814ba81f7ce727eeb27236613df5c93",
-        "after_sha256": "044e4fd354a4a52b046805f0ac7ec91444d9b7c9849d069b3fc9ee6f7bbfb5c5"
-      },
-      {
-        "path": "plugins/ashare-analysis-companion/skills/ashare-fundamental-research/SKILL.md",
-        "before_sha256": "041cc878ff1c047a9fc23ec08c54fd354ab5fa6c8cd459392dc9fa74040d88ea",
-        "after_sha256": "08ce24574ddb7a086672b9f821f410bcb3ed91769a35958448ae89befd5b4418"
-      },
-      {
-        "path": "plugins/ashare-analysis-companion/skills/ashare-strategy-validation/SKILL.md",
-        "before_sha256": "c780975507ecd3b97930da33afcf16aa1c9f01563033a9168f4fc5c60911dbf2",
-        "after_sha256": "40d5a5a1a383f51e691c11d71768ea61904643a89225b3b552f8887a2c5146cf"
-      },
-      {
-        "path": "plugins/ashare-analysis-companion/skills/ashare-strategy-validation/references/validation-protocol.md",
-        "before_sha256": "9b1fddeafb49f16eee076eeadbda0c5631eeb206c62aaae4cbd4748fab4a1ce4",
-        "after_sha256": "6161b13d7b8e40acdde97e24dc44c20e39802db0df29d5cddbc1886489568030"
-      },
-      {
-        "path": "plugins/ashare-analysis-companion/skills/ashare-swing-screen/SKILL.md",
-        "before_sha256": "1fc0f2ee8cffbf5eedcb463fd2097d0e2d9e587e4a327178b29f22bc97b715f0",
-        "after_sha256": "51c9053f12c7ca6951145a78108bdfa5ff69a6f03daba8e9db852523a8c2fef0"
-      },
-      {
-        "path": "plugins/ashare-analysis-companion/skills/ashare-swing-screen/references/screen-contract.md",
-        "before_sha256": "9d4bbd211c93a4b087bbd9e8453215025bdbc1af2a2662ba6ead2ae29f96fe39",
-        "after_sha256": "216a139ceff3ec6df85624dc74a43489e74096a79d61744273c6aa6d5652c51a"
-      }
-    ]
+    "public_runtime_service_version": "1.27.0-public.2",
+    "private_formal_source_changed": false
   },
   "cloud_local_storage_isolation": {
     "version": "cloud-transient-local-node-storage-v1",
@@ -655,5 +594,23 @@
     ],
     "local_replacement_tests": "test/local-observation-store.test.mjs",
     "cloud_dependency_tests": "test/cloud-local-storage-boundary.test.mjs"
+  },
+  "local_loader_planner_candidate": {
+    "version": "local-loader-planner-v1",
+    "service_version": "1.28.0-dev.3",
+    "base_frozen_version": "1.28.0-dev.2",
+    "public_git_release_unchanged": "1.27.0-public.2",
+    "runtime": "trusted_Node_only",
+    "fast_quote_requested_target_ms": 1000,
+    "fast_quote_max_symbols": 20,
+    "research_pool_not_auto_subscribed": true,
+    "planner_only_no_registration": true,
+    "real_market_calls": false,
+    "real_local_activation": false,
+    "source_license": "unknown",
+    "source_finality": "unknown",
+    "daily_tail_local_time": "15:35 Asia/Shanghai on verified trading days",
+    "observation_revision_hashes_new_same_session_run": true,
+    "condition_recompute_source_calls": 0
   }
 }
