@@ -6,7 +6,7 @@ description: 审查A股策略可靠性、回测与参数比较，研究仓位和
 
 此技能源码变体为 1.9.29-public.2，配套 1.27.0-public.2 / public-no-credentials-v2。它与运行中的私有服务及正式安装的 1.9.29 技能能力不同。公开云端的 14 个 MCP 名字中，get_stock_directory、get_auction_snapshot、get_auction_series、get_archive 是四个 unsupported 兼容占位；返回 PUBLIC_PROFILE_LOCAL_REQUIRED 和 local_required=true，不读取环境、数据库、凭据或来源，也不写入数据库。get_diagnostics 仅返回被动元数据与当前实例请求观察，不作上游探测。公开代码不含凭据设置、Access 桥或采集器执行流程；不能通过配置密钥启用被移除功能。
 
-云端筛选只接受公开显式代码和固定 swing-daily-v1；私人名单、阈值、条件及结果只在授权本地执行。无密钥 OHLCV 内核已经准备，但真实 loader、连续更新与盘后调度尚未接入。条件模块 0.1.3 只有 10 条虚构池记录及合成行情，不是实际行业龙头池。详见 [公开技能能力声明](../../PUBLIC-PROFILE.md)。
+云端筛选只接受公开显式代码和固定 swing-daily-v1；私人名单、阈值、条件及结果只在授权本地执行。无密钥 OHLCV 内核已经准备，但真实 loader、连续更新与盘后调度尚未接入。条件模块 0.1.4（开发候选） 只有 10 条虚构池记录及合成行情，不是实际行业龙头池。详见 [公开技能能力声明](../../PUBLIC-PROFILE.md)。
 
 # A 股策略验证与风险审查
 
@@ -20,7 +20,7 @@ description: 审查A股策略可靠性、回测与参数比较，研究仓位和
 
 公开 Worker 已物理移除行情数据库读写、云端持久回退和本地留存 opt-in；不读取既有 D1 快照或归档，get_archive 在云端返回 unsupported。默认 db/schema.ts 为空导出，云端 SQL 不建表、不迁移、不删表；云构建没有 SQL writer、行情 schema 或 portable 存储依赖。官方公共目录只保留有界 isolate 内存缓存。
 
-手工观察、归档、快照回退与私人自选存储只存在于仓库的 portable/local-market.mjs、portable/local-watchlist.mjs、portable/local-observation-store.mjs，须由 portable/sqlite.mjs 的 Node DatabaseSync 工厂签发不可变、仍打开的本地能力。通用 D1、任意 env、客户端 JSON 标记和已关闭实例均被拒绝。显式 127.0.0.1 Node 宿主支持获授权的手工查询与本地留存；此次源码交付未启动实际本地服务。许可存疑行情只在获授权本地保存，不进 Git 或云端长期归档；源码不带真实档案。私人密钥、名单、条件和结果不提交云工具。独立的 OHLCV 更新内核仍未接真实 loader、更新路由或连续/盘后调度；0.1.3 条件页面只提供 10 条虚构池记录的合成演示。离线构建和测试不证明目录可访问、真实更新完成或策略盈利。
+手工观察、归档、快照回退与私人自选存储只存在于仓库的 portable/local-market.mjs、portable/local-watchlist.mjs、portable/local-observation-store.mjs，须由 portable/sqlite.mjs 的 Node DatabaseSync 工厂签发不可变、仍打开的本地能力。通用 D1、任意 env、客户端 JSON 标记和已关闭实例均被拒绝。显式 127.0.0.1 Node 宿主支持获授权的手工查询与本地留存；此次源码交付未启动实际本地服务。许可存疑行情只在获授权本地保存，不进 Git 或云端长期归档；源码不带真实档案。私人密钥、名单、条件和结果不提交云工具。独立的 OHLCV 更新内核仍未接真实 loader、更新路由或连续/盘后调度；0.1.4 开发条件页面只提供 10 条虚构池记录的合成演示。离线构建和测试不证明目录可访问、真实更新完成或策略盈利。
 
 ## 私有策略仅在本地验证
 

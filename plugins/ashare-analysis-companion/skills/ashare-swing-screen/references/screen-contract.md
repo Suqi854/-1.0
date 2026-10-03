@@ -3,7 +3,7 @@
 
 此技能源码变体为 1.9.29-public.2，配套 1.27.0-public.2 / public-no-credentials-v2。它与运行中的私有服务及正式安装的 1.9.29 技能能力不同。公开云端的 14 个 MCP 名字中，get_stock_directory、get_auction_snapshot、get_auction_series、get_archive 是四个 unsupported 兼容占位；返回 PUBLIC_PROFILE_LOCAL_REQUIRED 和 local_required=true，不读取环境、数据库、凭据或来源，也不写入数据库。get_diagnostics 仅返回被动元数据与当前实例请求观察，不作上游探测。公开代码不含凭据设置、Access 桥或采集器执行流程；不能通过配置密钥启用被移除功能。
 
-云端筛选只接受公开显式代码和固定 swing-daily-v1；私人名单、阈值、条件及结果只在授权本地执行。无密钥 OHLCV 内核已经准备，但真实 loader、连续更新与盘后调度尚未接入。条件模块 0.1.3 只有 10 条虚构池记录及合成行情，不是实际行业龙头池。详见 [公开技能能力声明](../../../PUBLIC-PROFILE.md)。
+云端筛选只接受公开显式代码和固定 swing-daily-v1；私人名单、阈值、条件及结果只在授权本地执行。无密钥 OHLCV 内核已经准备，但真实 loader、连续更新与盘后调度尚未接入。条件模块 0.1.4（开发候选） 只有 10 条虚构池记录及合成行情，不是实际行业龙头池。详见 [公开技能能力声明](../../../PUBLIC-PROFILE.md)。
 
 # 波段筛选契约与公式
 
@@ -13,7 +13,7 @@
 
 本公开源码 1.27.0-public.2 保留 14 个 MCP 名字，其中 get_stock_directory/get_auction_snapshot/get_auction_series/get_archive 为 unsupported，占位名字不是可执行能力。get_diagnostics 被动，云端筛选 schema 收缩为 explicit 固定预设。技能源码变体 1.9.29-public.2 不改变另一部署或正式安装的技能。
 
-先读 [盘后完成与留存边界](../../ashare-analysis/references/data-coverage.md#盘后完成与留存边界)：云端无行情数据库读写或持久回退，get_archive 为 unsupported；默认 schema/SQL 不建表、不迁移、不删表，云构建无 SQL writer 或 portable 存储依赖。私人资料与获授权手工留存只在显式 127.0.0.1 Node 宿主，须有 Node DatabaseSync 工厂签发的不可变开放能力；D1、任意 env、JSON 标记和已关闭实例均被拒绝。此次源码交付未启动实际本地服务。本地 OHLCV 内核尚未接真实 loader/路由/连续或盘后调度；条件模块 0.1.3 仅有 10 条虚构池记录的合成页面，不是实际行业龙头池或策略验证。
+先读 [盘后完成与留存边界](../../ashare-analysis/references/data-coverage.md#盘后完成与留存边界)：云端无行情数据库读写或持久回退，get_archive 为 unsupported；默认 schema/SQL 不建表、不迁移、不删表，云构建无 SQL writer 或 portable 存储依赖。私人资料与获授权手工留存只在显式 127.0.0.1 Node 宿主，须有 Node DatabaseSync 工厂签发的不可变开放能力；D1、任意 env、JSON 标记和已关闭实例均被拒绝。此次源码交付未启动实际本地服务。本地 OHLCV 内核尚未接真实 loader/路由/连续或盘后调度；条件模块 0.1.4（开发候选） 仅有 10 条虚构池记录的合成页面，不是实际行业龙头池或策略验证。
 
 ## get_swing_screen 输入
 

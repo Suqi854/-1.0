@@ -6,7 +6,7 @@
 
 本公开源码为 1.27.0-public.2/public-no-credentials-v2，配套技能变体 1.9.29-public.2。14 个保留云端名字中 get_stock_directory、get_auction_snapshot、get_auction_series、get_archive 四个兼容工具 unsupported，不读环境、数据库、密钥或来源；诊断只被动，云端筛选只支持公开显式代码及固定预设。先读 [盘后完成与留存边界](../../ashare-analysis/references/data-coverage.md#盘后完成与留存边界)。
 
-云端没有行情数据库读写、既有 D1 读取或持久回退，get_archive 是 unsupported；默认 schema/SQL 不建表、不迁移、不删表，云构建没有 SQL writer 或 portable 存储依赖。私人资料、条件及获授权手工观察/归档/回退/自选只在显式 127.0.0.1 Node 宿主，要求 portable/sqlite.mjs 的 Node DatabaseSync 工厂签发不可变、仍打开的能力；通用 D1、任意 env、JSON 标记和关闭实例均被拒绝。此次源码交付未启动实际本地服务。准备 OHLCV 内核未接真实 loader/连续或盘后调度，0.1.3 条件页面仅有 10 条虚构池记录的合成演示。源码、schema 或离线测试不是当前来源可用、实际更新完成或盈利证据。
+云端没有行情数据库读写、既有 D1 读取或持久回退，get_archive 是 unsupported；默认 schema/SQL 不建表、不迁移、不删表，云构建没有 SQL writer 或 portable 存储依赖。私人资料、条件及获授权手工观察/归档/回退/自选只在显式 127.0.0.1 Node 宿主，要求 portable/sqlite.mjs 的 Node DatabaseSync 工厂签发不可变、仍打开的能力；通用 D1、任意 env、JSON 标记和关闭实例均被拒绝。此次源码交付未启动实际本地服务。准备 OHLCV 内核未接真实 loader/连续或盘后调度，0.1.4 开发条件页面仅有 10 条虚构池记录的合成演示。源码、schema 或离线测试不是当前来源可用、实际更新完成或盈利证据。
 
 ## 固定问题并保留试验历史
 

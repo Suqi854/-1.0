@@ -1,4 +1,6 @@
-# 独立条件选股模块 · 一期 0.1.3
+> Development only1.28.0-dev.2 / condition0.1.4: explicit research_only emits version2 research_rows/counts and safe strict placeholders; the strict190 baseline remains. See ../../docs/research-only-next-contract.md. No actual101 pool/source/local activation or Git/deployment.
+
+# 独立条件选股模块 · 开发 0.1.4
 
 本模块是既有 **ashare-analysis-companion** 行情服务/技能的新增消费组件。它不创建另一个行情管道或插件身份，也不读取 key、持仓、自选、私人策略文件。本阶段只有通用规则和合成/mock数据。此目录由原工程集成；静态入口仅提供合成演示，不启动真实采集或上传私人规则。正式技能仍由原插件发布流程独立管理。
 

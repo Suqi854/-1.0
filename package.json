@@ -1,6 +1,6 @@
 {
   "name": "ashare-live-quotes",
-  "version": "1.27.0-public.2",
+  "version": "1.28.0-dev.3",
   "private": true,
   "type": "module",
   "scripts": {

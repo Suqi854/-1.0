@@ -12,7 +12,8 @@ export function createScreenLedger(config){
   const allowed=['version','runId','targetSession','calendarVersion','policyVersion','manifestHash','synthetic','directory','frames','rule','limits','batchSize'];
   if(Object.keys(config).some(k=>!allowed.includes(k))||config.version!==1||(config.limits!==undefined&&!object(config.limits))||(config.synthetic!==undefined&&typeof config.synthetic!=='boolean')||typeof config.manifestHash!=='string'||!/^[0-9a-f]{64}$/.test(config.manifestHash)||!(config.batchSize===undefined||Number.isInteger(config.batchSize)&&config.batchSize>=1&&config.batchSize<=20))return {valid:false,errors:[problem('BATCH_CONFIG_INVALID','缺合法manifestHash/版本，或批次超20股/存在未知属性')]};
   const base={version:1,synthetic:config.synthetic===true,generation:config.runId,targetSession:config.targetSession,calendarVersion:config.calendarVersion,policyVersion:config.policyVersion,directory:config.directory,frames:config.frames,stocks:[]};
-  const limits=config.limits??{};
+  const limits=config.limits??{},research=limits.evaluation_mode==='research_only';
+  if(research&&config.manifestHash!==config.directory?.researchIdentity?.research_universe_hash)return {valid:false,errors:[problem('RESEARCH_MANIFEST_HASH_MISMATCH','冻结manifestHash须为独立research universe hash，不是目录hash或任意hash')]};
   const ruleCheck=validateRule(JSON.stringify(config.rule));
   const initial=screen(JSON.stringify(base),JSON.stringify(config.rule),JSON.stringify({...limits,maxProcessed:0}));
   if(!ruleCheck.valid||!['completed','blocked'].includes(initial.status))return {valid:false,errors:[...ruleCheck.errors,...initial.errors]};
@@ -24,6 +25,7 @@ export function createScreenLedger(config){
   const batchSize=config.batchSize??20,maximum=Math.min(limits.maxProcessed??LIMITS.maxSymbols,Math.floor(LIMITS.maxEvaluations/ruleCheck.nodes));
   const order=initial.rows.map(r=>r.symbol),directory=new Map(config.directory.entries.map(e=>[e.symbol,e]));
   const rows=new Map(initial.rows.map(r=>[r.symbol,{...r,reasons:[problem('PENDING_LOCAL_BATCH','本地批次尚未消费')]}]));
+  const researchRows=research?new Map(initial.research_rows.map(r=>[r.symbol,r])):null;
   const committed=new Set(),batchLog=[];let cursor=0,active=null,sequence=0;
   function nextBatch(){
     if(active)return structuredClone(active);
@@ -34,7 +36,7 @@ export function createScreenLedger(config){
   }
   function reject(code,message){
     if(!active)return {accepted:false,errors:[problem(code,message)]};
-    for(const symbol of active.symbols){const old=rows.get(symbol);rows.set(symbol,{...old,state:'failure',decision:'unknown',passed:null,reasons:[problem(code,message)]});committed.add(symbol);}
+    for(const symbol of active.symbols){const old=rows.get(symbol);rows.set(symbol,{...old,state:'failure',decision:'unknown',passed:null,reasons:[problem(code,message)]});if(research)researchRows.set(symbol,{...researchRows.get(symbol),state:'failure',research_decision:'unknown',research_passed:null,reasons:[problem(code,message)]});committed.add(symbol);}
     batchLog.push({batchId:active.batchId,symbols:[...active.symbols],accepted:false,code});cursor+=active.symbols.length;active=null;
     return {accepted:false,errors:[problem(code,message)]};
   }
@@ -55,10 +57,12 @@ export function createScreenLedger(config){
     for(const rec of batch.records){const d=rec.result?.dataset;if(rec.result?.available===true&&object(d)&&['dataset_id','target_session','calendar_version','policy_version'].some((k,i)=>d[k]!==[tuple.runId,tuple.targetSession,tuple.calendarVersion,tuple.policyVersion][i]))return reject('BATCH_FREEZE_MISMATCH','实际dataset冻结tuple跨批不一致，拒合');}
     const adapted=adaptPortableDatasets(JSON.stringify({runId:tuple.runId,targetSession:tuple.targetSession,calendarVersion:tuple.calendarVersion,policyVersion:tuple.policyVersion,synthetic:base.synthetic,directory:{...config.directory,entries:active.symbols.map(s=>directory.get(s))},frames:config.frames,records:batch.records,suspensionBySymbol:batch.suspensionBySymbol??{}}));
     if(!adapted.valid)return reject('BATCH_ADAPTER_INVALID','本地批次适配输入无效，拒合');
-    const evaluated=screen(JSON.stringify(adapted.snapshot),JSON.stringify(config.rule),JSON.stringify({maxProcessed:active.symbols.length}));
+    const evaluated=screen(JSON.stringify(adapted.snapshot),JSON.stringify(config.rule),JSON.stringify({maxProcessed:active.symbols.length,...(research?{evaluation_mode:'research_only'}:{})}));
     if(evaluated.status!=='completed'||evaluated.rows.length!==active.symbols.length||new Set(evaluated.rows.map(r=>r.symbol)).size!==active.symbols.length||evaluated.rows.some(r=>!active.symbols.includes(r.symbol)||committed.has(r.symbol)))return reject('BATCH_EVALUATION_INVALID','批次结果无效、缺symbol或重复提交，拒合');
+    if(research&&(evaluated.version!==2||evaluated.result_contract!=='ashare-research-screen-v1'||evaluated.evaluation_mode!=='research_only'||!Array.isArray(evaluated.research_rows)||evaluated.research_rows.length!==active.symbols.length))return reject('BATCH_RESULT_CONTRACT','研究模式结果合同不一致');
     for(const row of evaluated.rows){rows.set(row.symbol,row);committed.add(row.symbol);}
-    const receipt={batchId:active.batchId,symbols:[...active.symbols],accepted:true,counts:evaluated.counts,diagnosticCodes:[...new Set(adapted.diagnostics.map(d=>d.code))]};batchLog.push(receipt);cursor+=active.symbols.length;active=null;
+    if(research)for(const row of evaluated.research_rows)researchRows.set(row.symbol,row);
+    const receipt={batchId:active.batchId,symbols:[...active.symbols],accepted:true,counts:evaluated.counts,...(research?{evaluation_mode:'research_only',research_counts:evaluated.research_counts}:{}),diagnosticCodes:[...new Set(adapted.diagnostics.map(d=>d.code))]};batchLog.push(receipt);cursor+=active.symbols.length;active=null;
     return structuredClone(receipt);
   }
   function finish(){
@@ -66,7 +70,7 @@ export function createScreenLedger(config){
       const row=rows.get(symbol);return row.state==='unprocessed'?{...row,reasons:[problem(cursor>=maximum?'PROCESS_BUDGET':'PENDING_LOCAL_BATCH',cursor>=maximum?'累计预算已达，未处理':'本地批次尚未消费')]}:row;
     });
     // Detach the entire report, including nested metadata inherited from initial.
-    return structuredClone({...initial,status:cursor>=order.length?'completed':cursor>=maximum?'budget_exhausted':'pending',rows:result,counts:count(result),freezeTuple:tuple,batchLedger:batchLog,batchSize,maxProcessed:maximum,ruleNodes:ruleCheck.nodes,cumulativeEvaluationBudget:result.filter(r=>r.state!=='unprocessed').length*ruleCheck.nodes,processingComplete:result.every(r=>r.state!=='unprocessed'),dataExecution:'local_batch_consumer',note:'总数来自一次冻结目录；每symbol恰一状态。仅保留结果/元数据，不在ledger保留OHLCV；不证明真实全池完成'});
+    return structuredClone({...initial,status:cursor>=order.length?'completed':cursor>=maximum?'budget_exhausted':'pending',rows:result,counts:count(result),...(research?{research_rows:order.map(s=>researchRows.get(s)),research_counts:count(order.map(s=>researchRows.get(s)))}:{}),freezeTuple:tuple,batchLedger:batchLog,batchSize,maxProcessed:maximum,ruleNodes:ruleCheck.nodes,cumulativeEvaluationBudget:result.filter(r=>r.state!=='unprocessed').length*ruleCheck.nodes,processingComplete:result.every(r=>r.state!=='unprocessed'),dataExecution:'local_batch_consumer',note:'总数来自一次冻结目录；每symbol恰一状态。仅保留结果/元数据，不在ledger保留OHLCV；不证明真实全池完成'});
   }
   return {valid:true,nextBatch,consume,finish};
 }

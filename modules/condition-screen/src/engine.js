@@ -231,10 +231,11 @@ function evaluateTree(root, st, snapshot) {
 function validateLimits(limits) {
   const errors = [];
   if (!object(limits)) return [issue('INVALID_LIMITS', 'limits必须为对象')];
-  keys(limits, ['symbols', 'exchanges', 'maxProcessed'], 'limits', errors);
+  keys(limits, ['symbols', 'exchanges', 'maxProcessed', 'evaluation_mode'], 'limits', errors);
   if (own(limits, 'symbols') && (!Array.isArray(limits.symbols) || limits.symbols.length > LIMITS.maxSymbols || limits.symbols.some(x => typeof x !== 'string' || !/^(SH|SZ)\d{6}$/.test(x)) || new Set(limits.symbols).size !== limits.symbols.length)) errors.push(issue('INVALID_SYMBOL_LIMIT', 'symbol限制无效/重复/超界'));
   if (own(limits, 'exchanges') && (!Array.isArray(limits.exchanges) || limits.exchanges.some(x => !['SH', 'SZ'].includes(x)))) errors.push(issue('INVALID_EXCHANGE_LIMIT', '仅允许SH/SZ'));
   if (own(limits, 'maxProcessed') && !integer(limits.maxProcessed, 0, LIMITS.maxSymbols)) errors.push(issue('INVALID_PROCESS_BUDGET', '处理上限必须0..6000'));
+  if (own(limits,'evaluation_mode') && !['strict','research_only'].includes(limits.evaluation_mode)) errors.push(issue('INVALID_EVALUATION_MODE','仅支持strict/research_only'));
   return errors;
 }
 function counts(rows) {
@@ -245,16 +246,18 @@ function counts(rows) {
 export function screen(snapshot, rule, limits = '{}') {
   const snapshotInput = readJSONInput(snapshot), ruleInput = readJSONInput(rule), limitsInput = readJSONInput(limits);
   const boundaryErrors = [snapshotInput, ruleInput, limitsInput].filter(x => !x.valid).map(x => x.error);
-  if (boundaryErrors.length) return { version: 1, synthetic: false, execution: 'pure_local_consumer', status: 'invalid', coverageKnown: false, counts: counts([]), rows: [], errors: boundaryErrors };
+  if (boundaryErrors.length) { const invalid={ version: 1, synthetic: false, execution: 'pure_local_consumer', status: 'invalid', coverageKnown: false, counts: counts([]), rows: [], errors: boundaryErrors };return limitsInput.valid&&validateLimits(limitsInput.value).length===0&&limitsInput.value.evaluation_mode==='research_only'?researchError(invalid):invalid; }
   snapshot = snapshotInput.value; rule = ruleInput.value; limits = limitsInput.value;
   const ruleCheck = validateRuleData(rule), snapshotCheck = validateSnapshotData(snapshot), limitErrors = validateLimits(limits);
+  const research=limits?.evaluation_mode==='research_only';
   const errors = [...ruleCheck.errors, ...snapshotCheck.errors, ...limitErrors];
+  if(research&&!researchIdentityValid(snapshot?.directory?.researchIdentity))errors.push(issue('RESEARCH_IDENTITY_REQUIRED','研究模式须独立研究身份头；不伪造官方目录'));
   const empty = { version: 1, synthetic: snapshot?.synthetic === true, execution: 'pure_local_consumer', counts: counts([]), rows: [], errors };
-  if (errors.length) return { ...empty, status: 'invalid', coverageKnown: false };
-  if (snapshot.directory.status !== 'ready') return { ...empty, status: 'blocked', coverageKnown: false, counts: null, errors: [issue(typeof snapshot.directory.errorCode === 'string' ? snapshot.directory.errorCode : 'DIRECTORY_UNAVAILABLE', '目录不可用，尚未开始；未知总数不记为0全池')] };
+  if (errors.length) return research?researchError({...empty,status:'invalid',coverageKnown:false}):{ ...empty, status: 'invalid', coverageKnown: false };
+  if (snapshot.directory.status !== 'ready') { const blocked={ ...empty, status: 'blocked', coverageKnown: false, counts: null, errors: [issue(typeof snapshot.directory.errorCode === 'string' ? snapshot.directory.errorCode : 'DIRECTORY_UNAVAILABLE', '目录不可用，尚未开始；未知总数不记为0全池')] };return research?researchError(blocked):blocked; }
   const excluded = [], restrictionExcluded = [], candidates = [];
   for (const e of snapshot.directory.entries) {
-    if (!isMainboard(e) || e.stStatus === 'st' || /(?:\*?ST|退)/i.test(e.name)) { excluded.push({ symbol: e.symbol, reason: 'OUTSIDE_MAINBOARD_NON_ST' }); continue; }
+    if (!(research?researchMainboard(e):isMainboard(e)) || e.stStatus === 'st' || /(?:\*?ST|退)/i.test(e.name) || research&&/^\*?ST/i.test(e.name.normalize('NFKC').trim())) { excluded.push({ symbol: e.symbol, reason: 'OUTSIDE_MAINBOARD_NON_ST' }); continue; }
     if ((limits.symbols && !limits.symbols.includes(e.symbol)) || (limits.exchanges && !limits.exchanges.includes(e.exchange))) { restrictionExcluded.push(e.symbol); continue; }
     candidates.push(e);
   }
@@ -270,17 +273,31 @@ export function screen(snapshot, rule, limits = '{}') {
     const base = { symbol: e.symbol, name: e.name, directoryAsOf: snapshot.directory.asOf, requestedFrames };
     if (i >= max) return { ...base, state: 'unprocessed', reasons: [issue('PROCESS_BUDGET', '到达有界处理预算')] };
     if (requiredDates.some(d => date(d) && snapshot.directory.asOf < d)) return { ...base, state: 'insufficient', reasons: [issue('DIRECTORY_STALE', '目录非ST身份日期早于所用冻结截止')] };
-    if (e.stStatus !== 'non_st') return { ...base, state: 'insufficient', reasons: [issue('ST_STATUS_UNKNOWN', '无法确认非ST')] };
+    if (!research && e.stStatus !== 'non_st') return { ...base, state: 'insufficient', reasons: [issue('ST_STATUS_UNKNOWN', '无法确认非ST')] };
+    if(research&&!validNameObservation(e,requiredDates))return {...base,state:'insufficient',reasons:[issue('NAME_OBSERVATION_UNKNOWN_OR_STALE','简称排ST观察缺失/过期；不能用研究形成日代替')]};
     const st = stocks.get(e.symbol);
     if (!st) return { ...base, state: 'insufficient', reasons: [issue('MISSING_STOCK', '目录存在但历史未准备好')] };
     if (st.status === 'error') return { ...base, state: 'failure', reasons: [issue('DATA_FAILURE', typeof st.errorCode === 'string' ? st.errorCode : '上游股票数据失败')] };
     if (st.status !== 'ready') return { ...base, state: 'insufficient', reasons: [issue('MISSING_STOCK', '股票快照未准备好')] };
-    if (!object(st.suspension) || st.suspension.state !== 'active' || !date(st.suspension.verifiedThrough) || requiredDates.some(d => !date(d) || st.suspension.verifiedThrough < d)) return { ...base, state: 'insufficient', reasons: [issue(st.suspension?.state === 'suspended' ? 'SUSPENDED' : 'SUSPENSION_UNKNOWN', st.suspension?.state === 'suspended' ? '已停牌，本期不判定策略' : '截止日停牌状态未知')] };
+    if (!research && (!object(st.suspension) || st.suspension.state !== 'active' || !date(st.suspension.verifiedThrough) || requiredDates.some(d => !date(d) || st.suspension.verifiedThrough < d))) return { ...base, state: 'insufficient', reasons: [issue(st.suspension?.state === 'suspended' ? 'SUSPENDED' : 'SUSPENSION_UNKNOWN', st.suspension?.state === 'suspended' ? '已停牌，本期不判定策略' : '截止日停牌状态未知')] };
     const bases = usedFrames.map(f => st.series?.[f]).filter(s => s?.status === 'ready' && typeof s.sourceKey === 'string' && typeof s.adjustment === 'string');
     if (new Set(bases.map(s => `${s.sourceKey}/${s.adjustment}`)).size > 1) return { ...base, state: 'failure', reasons: [issue('CROSS_FRAME_BASIS_MISMATCH', '所用多周期来源或复权不同，适配器需统一口径')] };
     const tree = evaluateTree(rule.root, st, snapshot);
     return { ...base, state: tree.state, tree };
   }).map(row => ({ ...row, decision: row.state === 'match' ? 'pass' : row.state === 'no_match' ? 'fail' : 'unknown', passed: row.state === 'match' ? true : row.state === 'no_match' ? false : null }));
-  return { version: 1, status: 'completed', synthetic: snapshot.synthetic === true, execution: 'pure_local_consumer', coverageKnown: true, directory: { asOf: snapshot.directory.asOf, source: snapshot.directory.source, universe: snapshot.directory.universe, universeVersion: snapshot.directory.universeVersion ?? null, sourceNotes: snapshot.directory.sourceNotes ?? null, catalogTotal: snapshot.directory.entries.length, excludedTotal: excluded.length, restrictionExcludedTotal: restrictionExcluded.length }, frozenFrames: snapshot.frames, counts: counts(rows), rows, excluded, restrictionExcluded, requestedOutsideCatalog: (limits.symbols ?? []).filter(s => !snapshot.directory.entries.some(e => e.symbol === s)), errors: [], warnings: ['目录准备好不代表历史全池完成；successful仅表示可判定条件', 'source_finality未知时不声称来源最终值已获确认；计算仅针对输入冻结副本', '自定义规则和个人数据须在本地执行保存；本模块不抓取、不持久化、不交易'] };
+  const report={ version: 1, status: 'completed', synthetic: snapshot.synthetic === true, execution: 'pure_local_consumer', coverageKnown: true, directory: { asOf: snapshot.directory.asOf, source: snapshot.directory.source, universe: snapshot.directory.universe, universeVersion: snapshot.directory.universeVersion ?? null, sourceNotes: snapshot.directory.sourceNotes ?? null, catalogTotal: snapshot.directory.entries.length, excludedTotal: excluded.length, restrictionExcludedTotal: restrictionExcluded.length }, frozenFrames: snapshot.frames, counts: counts(rows), rows, excluded, restrictionExcluded, requestedOutsideCatalog: (limits.symbols ?? []).filter(s => !snapshot.directory.entries.some(e => e.symbol === s)), errors: [], warnings: ['目录准备好不代表历史全池完成；successful仅表示可判定条件', 'source_finality未知时不声称来源最终值已获确认；计算仅针对输入冻结副本', '自定义规则和个人数据须在本地执行保存；本模块不抓取、不持久化、不交易'] };
+  return research?researchReport(report, snapshot, stocks):report;
 }
 function collectFrames(n) { return n.type === 'condition' ? [n.timeframe] : n.children.flatMap(collectFrames); }
+
+function researchIdentityValid(h){return object(h)&&h.schema_version==='research-identity-v1'&&h.basis==='public_company_research_and_name_observation'&&['research_universe_hash','pool_hash','evidence_sha256'].every(k=>typeof h[k]==='string'&&/^[a-f0-9]{64}$/.test(h[k]))&&typeof h.version==='string'&&!!h.version&&typeof h.evidence_revision==='string'&&!!h.evidence_revision&&date(h.name_observation_session)&&h.official_directory_verified===false&&h.directory_identity_hash===null;}
+function validNameObservation(e,dates){const o=e.nameObservation;return object(o)&&date(o.asOf)&&typeof o.provider==='string'&&!!o.provider&&o.stPrefixObserved===false&&!/^\*?ST/i.test(e.name.normalize('NFKC').trim())&&dates.every(d=>date(d)&&o.asOf>=d);}
+function researchReport(report,snapshot,stocks){
+ const research_rows=report.rows.map(({decision,passed,...r})=>({...r,research_decision:decision,research_passed:passed,trading_eligibility:{state:stocks.get(r.symbol)?.suspension?.state==='suspended'?'blocked':'unknown',actionable:false,official_st_status:snapshot.directory.entries.find(e=>e.symbol===r.symbol)?.stStatus??'unknown',suspension:stocks.get(r.symbol)?.suspension?.state??'unknown',reasons:[stocks.get(r.symbol)?.suspension?.state==='suspended'?'KNOWN_SUSPENSION':'RESEARCH_ONLY_NOT_TRADING_CERTIFICATION']}}));
+ const rows=report.rows.map(r=>({...r,state:['failure','unprocessed'].includes(r.state)?r.state:'insufficient',decision:'unknown',passed:null,tree:undefined,reasons:[issue('RESEARCH_RESULT_NOT_STRICT','研究判断不能作为strict成功；读取version2 research_rows')]}));
+ return {...report,version:2,result_contract:'ashare-research-screen-v1',evaluation_mode:'research_only',rows,counts:counts(rows),research_rows,research_counts:report.counts,warnings:[...report.warnings,'RESEARCH_ONLY: official status unknown remains unknown; all rows actionable=false']};
+}
+
+function researchMainboard(e){return e.board==='mainboard'&&/^(?:SH(?:600|601|603|605)\d{3}|SZ(?:000|001|002|003|004)\d{3})$/.test(e.symbol)&&e.symbol!=='SZ000000'&&!(e.symbol.startsWith('SZ')&&Number(e.symbol.slice(2))>=1001&&Number(e.symbol.slice(2))<=1199);}
+
+function researchError(report){return {...report,version:2,result_contract:'ashare-research-screen-v1',evaluation_mode:'research_only',research_rows:[],research_counts:report.counts===null?null:counts([]),directory:null};}
