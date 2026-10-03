@@ -1,0 +1,3 @@
+// Capability declaration for this physically reduced source distribution.
+// There is no switch, credential table, provider-key reader or collector to enable.
+export const PUBLIC_PROFILE=Object.freeze({version:'public-no-credentials-v2',private_site_version:'1.27.0',public_source_version:'1.27.0-public.2',cloud_credentials:false,cloud_bridge:false,collector:false,private_cloud_preferences:false,cloud_market_persistence:false,cloud_database_reads:false,local_storage:'trusted_Node_SQLite_only',unsupported_tools:Object.freeze(['get_stock_directory','get_auction_snapshot','get_auction_series','get_archive']),condition_runtime:'client_only_synthetic',data_runtime:'credential_free_manual_queries'});

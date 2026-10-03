@@ -1,0 +1,24 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "ashare-analysis-companion",
+  "version": "1.9.29-public.2",
+  "description": "Evidence-based Chinese A-share market analysis, fixed swing screening, fundamental valuation research and strategy-risk validation. No server or trading functions.",
+  "author": {
+    "name": "Plugin owner"
+  },
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "A股分析技能",
+        "shortDescription": "行情、波段、基本面与策略风险研究",
+        "longDescription": "配合已连接行情工具解释量价并执行固定波段筛选；用正式披露或用户财报研究少量指定公司的经营质量、情景估值与反证，并审查策略数据、执行与风险。缺少财务数据时不声称完成全市场基本面筛选。仅研究，不交易、不自动监控、不承诺收益。",
+        "developerName": "Plugin owner",
+        "category": "Productivity",
+        "capabilities": [
+          "Interactive"
+        ],
+        "defaultPrompt": "用已连接的行情工具分析指定A股的分时量价、日周月K线和MACD，说明竞价覆盖与缺失数据，并区分事实和主力意图假设。"
+      }
+    }
+  }
+}

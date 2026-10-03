@@ -1,0 +1,15 @@
+{
+  "name": "ashare-live-quotes",
+  "version": "1.27.0-public.2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test test/*.test.mjs modules/condition-screen/tests/*.test.js",
+    "test:offline": "node --import ./scripts/offline-test-guard.mjs --test test/*.test.mjs modules/condition-screen/tests/*.test.js"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.11",
+    "drizzle-orm": "^0.45.3"
+  }
+}

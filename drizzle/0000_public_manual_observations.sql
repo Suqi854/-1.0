@@ -1,0 +1,2 @@
+-- Public cloud profile creates no market archive, snapshot, credential or preference tables.
+-- Local-only SQLite initialization is portable/manual-observations.sql; existing data is untouched.
