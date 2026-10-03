@@ -1,0 +1,21 @@
+# A-share public code workspace
+
+This repository contains the reviewed current Site source, prepared local OHLCV engine, generic documentation and invented test inputs. It contains no live market archive, runtime database, private key, personal stock list, position or private condition rule. Actual local operation is paused; the prepared updater has no source, route or timer.
+
+The existing Site provides transient queries and preserved old-history reads. New market-payload cloud persistence is disabled. Daily postclose eligibility uses the verified2026 schedule and requests strictly after15:30:03 Asia/Shanghai, with target-day data actually present; source final revisions remain unknown. Calendar-unverified old periods and forming weekly/monthly observations retain explicit evidence. This is not a full-market completed dataset or a verified trading edge.
+
+Run `npm ci`, `npm run test:offline` and `npm run build` using Node24. The offline guard prevents external requests. Regenerate invented fixtures with `node --import ./scripts/offline-test-guard.mjs scripts/generate-synthetic-fixtures.mjs`. Tests preserve provider-shape, units, time, failure, identity, storage and UI boundaries using only synthetic inputs.
+
+The local dataset contract is in docs/local-ohlcv-dataset-contract.md. Current retention and completion semantics are in docs/market-retention-and-postclose.md. Private combinations must execute and save locally; changing rules must not repeatedly collect data or upload rules to cloud/Git.
+
+The Site's screening area links to a separate client-only multi-condition editor under /condition-screen/. It is explicitly a synthetic demonstration: no real industry-leader pool or OHLCV dataset is connected. Rules run in browser memory and download only when the user clicks; CSP forbids network connections and there is no server rule API, telemetry or rule storage. modules/condition-screen contains the independently reviewed0.1.3 generic engine and invented fixtures. Its190 pure tests were independently rerun; the author's32 standalone browser checks do not establish integrated Site visual QA. Actual local data/strategy integration remains a later step.
+
+Source exports are generated from docs/public-export-manifest.json. They never import the original Site Git history, actual Cloudflare configuration, old deployment scripts or personal authorization records. test/support/legacy-cloudflare is offline regression support only. The remaining Cloudflare example has empty/placeholder values and collection disabled; there is no Cloudflare default deployment workflow. See docs/public-cloud-reference.md before any future review.
+
+.openai/hosting.json retains the original Site's non-secret project_id so its owner can update that same project from this Git source. The identifier is not a credential and does not grant viewing, editing or deployment access. Fork users must configure their own separately authorized project; copying this identifier does not authorize access to the original Site.
+
+plugins/ashare-analysis-companion is a source mirror of the existing four formally released skills at1.9.29. The public export generalizes one private deployment URL to an explicitly invalid example domain and removes three private learning-document links, preserving their evidence limitations and marking the documents as excluded. Its14 files therefore are not all byte-identical to the formal release. docs/public-export-manifest.json records all14 original hashes, the four exact transformations by hashed needle, and the two new export hashes without exposing the original private references. Both manifests, metadata and default prompts remain unchanged; it adds no MCP endpoint, app binding or new plugin identity. The Site runtime release and formal skill release remain separate verification steps.
+
+No new software open-source license is selected here. Existing and third-party licenses retain their own scope. Software licensing does not grant retention or redistribution rights for upstream market data; the reference/license record in docs/mainboard-screening-contract.md keeps that distinction.
+
+No order execution, paid resource, cloud collection schedule, real full-pool scan, performance backtest or revenue claim is enabled by this source tree.
